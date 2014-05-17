@@ -18,7 +18,7 @@ public class Block {
 	 * Creates a new block where each position is set to empty.
 	 */
 	public Block() {
-		positionStates = new ArrayList<>(NUM_POSITIONS + 1);
+		positionStates = new ArrayList<PositionState>(NUM_POSITIONS + 1);
 		for (int i = 1; i <= NUM_POSITIONS; i++) 
 		{
 			positionStates.add(PositionState.E);

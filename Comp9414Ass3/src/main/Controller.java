@@ -38,6 +38,9 @@ public class Controller {
 	 */
 	public void translateMessageFromServer(String inMessage) throws IOException 
 	{
+		if (Agent.debugMode)
+			System.out.println("Message from server: " + inMessage);
+		
 		if (inMessage.contains("start")) 
 		{
 			startTheGame(inMessage);
@@ -161,6 +164,9 @@ public class Controller {
 	 */
 	public void sendMoveToServer(String outMove) throws IOException 
 	{
+		if (Agent.debugMode)
+			System.out.println("Message sent to server: " + outMove);
+		
 		try 
 		{
 			Socket clientSocket = new Socket("localhost", serverPort);
