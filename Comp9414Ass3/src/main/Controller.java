@@ -13,9 +13,15 @@ import java.net.Socket;
 public class Controller {
 
 	private Player currentPlayer;
-	private Thread TCPConnectionThread;
 	private int serverPort; 
+	private boolean activeGame = true;
+	private TCPConnection tcpConnection;
 	
+	
+	public void setTCPConnection(TCPConnection inConnection)
+	{
+		tcpConnection = inConnection;
+	}
 	
 	public Controller(int inServerPort) {
 		serverPort = inServerPort;
@@ -26,9 +32,9 @@ public class Controller {
 		currentPlayer = inPlayer;
 	}
 	
-	public void setTCPConnectionThread(Thread inConnectionThread) 
+	public boolean isGameActive()
 	{
-		TCPConnectionThread = inConnectionThread;
+		return activeGame;
 	}
 	
 	/**
@@ -39,7 +45,7 @@ public class Controller {
 	public void translateMessageFromServer(String inMessage) throws IOException 
 	{
 		if (Agent.debugMode)
-			System.out.println("Message from server: " + inMessage);
+			System.out.println("Message from server: '" + inMessage + "'");
 		
 		if (inMessage.contains("start")) 
 		{
@@ -148,36 +154,15 @@ public class Controller {
 	private void decideOnNextMoveAndSendToServer() throws IOException {
 		int nextPosition = currentPlayer.decideNextMove();
 		
-		sendMoveToServer(String.valueOf(nextPosition));
+		tcpConnection.sendMoveToServer(String.valueOf(nextPosition));
 	}
 	
 	private void endGameKillServer() 
 	{
-		TCPConnectionThread.interrupt();
+		activeGame = false;
 	}
 	
 	
-	/**
-	 * Sends a string to the game server. In all cases this should be a move consisting of a single character.
-	 * @param outMove		The message to be sent to the server, e.g. "4"
-	 * @throws IOException	Exception thrown if there is an issue with sending data to the server. 
-	 */
-	public void sendMoveToServer(String outMove) throws IOException 
-	{
-		if (Agent.debugMode)
-			System.out.println("Message sent to server: " + outMove);
-		
-		try 
-		{
-			Socket clientSocket = new Socket("localhost", serverPort);
-			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			outToServer.writeBytes(outMove + '\n');
-			clientSocket.close();
-		} 
-		catch (IOException e)
-		{
-			throw new IOException("Unable to send messgae:" +  outMove + ", to server");
-		}
-	}
+	
 	
 }

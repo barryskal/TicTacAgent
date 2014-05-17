@@ -7,7 +7,7 @@ import java.util.Random;
 
 /**
  * 
- * @author Barry SSkalrud
+ * @author Barry Skalrud
  * The player class represents this player. It contains methods for parsing commands from the server,
  * deciding which move to make next and others
  *
@@ -67,6 +67,7 @@ public class Player {
 	public void makeOpponentMove(int blockNumber, int positionNumber)
 	{
 		currentGameState.setMove(opponentMark, blockNumber, positionNumber);
+		lastPositionPlayed = positionNumber;
 	}
 	
 	/**

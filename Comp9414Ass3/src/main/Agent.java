@@ -1,5 +1,7 @@
 package main;
 
+import java.io.IOException;
+
 public class Agent {
 
 	public static boolean debugMode = false;
@@ -21,13 +23,12 @@ public class Agent {
 			Controller gameController = new Controller(port);
 			gameController.setPlayer(new Player(gameController));
 			TCPConnection server = new TCPConnection(port, gameController);
-			Thread TCPServerThread = new Thread(server);
-			gameController.setTCPConnectionThread(TCPServerThread);
-			TCPServerThread.start();
+			server.startServer();
 			
 		} catch (Exception e) 
 		{
-				System.out.println(e.getMessage());
+				e.printStackTrace();
+				System.out.println("Progran Error: " + e.getMessage());
 		}
 		
 		System.out.println("Game Complete, exit");

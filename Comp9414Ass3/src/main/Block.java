@@ -19,19 +19,24 @@ public class Block {
 	 */
 	public Block() {
 		positionStates = new ArrayList<PositionState>(NUM_POSITIONS + 1);
+		/* Note that the value at index = 0 is set to E; however it should never be used.
+		 * This makes it simpler to reference the positions by array incdex. 
+		 */
+		positionStates.add(PositionState.E);
+		
 		for (int i = 1; i <= NUM_POSITIONS; i++) 
 		{
 			positionStates.add(PositionState.E);
 		}
 	}
 	
-	
+	/**
+	 * Sets the position in this block to the state provided, i.e. not empty.
+	 * @param position 		The position that needs to be changed
+	 * @param positionState	The state to which it is being changed (i.e. X or Y)
+	 */
 	public void setPosition(int position, PositionState positionState)
 	{
-		/* Need to decrement the position by 1, as the 0th element of the
-		 * ArrayList is the number 1 position 
-		 */
-		position -= 1;
 		positionStates.set(position, positionState);
 	}
 	
@@ -52,13 +57,16 @@ public class Block {
 	public List<Integer> getListOfEmptyCells()
 	{
 		ArrayList<Integer> listOfEmptyCells = new ArrayList<Integer>();
-		int i = 1;
+		int i = 0;
 		for (PositionState currentPosition : positionStates)
 		{
 			if (currentPosition == PositionState.E)
 				listOfEmptyCells.add(i);
 			i++;
 		}
+		
+		/* Remove the 0th element, as it is just the base element, which isn't real. */
+		listOfEmptyCells.remove(0);
 		
 		return listOfEmptyCells;
 	}

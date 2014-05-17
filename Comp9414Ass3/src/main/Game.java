@@ -15,8 +15,15 @@ public class Game {
 	 * all initially empty.
 	 */
 	public Game() {
+		board = new ArrayList<Block>();
 		
-		for (int i = 1; i <= NUM_BLOCKS; i++)
+		/* In order to simplify how the blocks are referenced in the ArrayList, the 0th
+		 * element is set to null
+		 */
+		
+		board.add(null);
+		
+		for (int i = 0; i < NUM_BLOCKS; i++)
 			board.add(new Block());
 		
 	}
@@ -29,6 +36,7 @@ public class Game {
 	 */
 	public void setMove(PositionState who, int blockNumber, int position)
 	{
+		
 		board.get(blockNumber).setPosition(position, who);
 		nextMoveInBlockNumber = position;
 	}
