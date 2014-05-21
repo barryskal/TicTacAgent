@@ -3,9 +3,9 @@ package main;
 
 public enum PositionState {
 
-	X("x"),
-	O("o"),
-	E("e");
+	X("X"),
+	O("O"),
+	E("-");
 
 	private String mValue;
 	
@@ -13,7 +13,7 @@ public enum PositionState {
 		mValue = inValue;
 	}
 	
-	private String getValue()
+	public String getValue()
 	{
 		return(mValue);
 	}
@@ -26,4 +26,15 @@ public enum PositionState {
 
 		throw new IllegalArgumentException("Invalid position type given " + inValue);
 	}
+	
+	/*public static String getPositionAsString(PositionState )
+	{
+		String cellValue;
+		PositionState cellState = positionStates.get(blockIndex);
+		
+		if (cellState == PositionState.E)
+			cellValue = " ";
+		else
+			cellValue = cellState.toString();
+	}*/
 }

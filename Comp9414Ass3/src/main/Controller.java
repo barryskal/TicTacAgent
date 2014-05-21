@@ -83,8 +83,7 @@ public class Controller {
 	 * @param startMessage The start message from the server. 
 	 */
 	private void startTheGame(String startMessage) {
-		currentPlayer.setPlayersMark(parseStartCommand(startMessage));
-		currentPlayer.initiateGame();
+		currentPlayer.initiateGame(parseStartCommand(startMessage));
 	}
 	
 	private PositionState parseStartCommand(String inMessage) {

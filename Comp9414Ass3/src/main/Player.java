@@ -25,7 +25,7 @@ public class Player {
 		gameController = inController;
 	}
 	
-	public void setPlayersMark (PositionState inPositionState) {
+	private void setPlayersMark (PositionState inPositionState) {
 		thisPlayersMark = inPositionState;
 		
 		// Set the opponents mark as the opposite of this player.
@@ -40,15 +40,11 @@ public class Player {
 		return thisPlayersMark;
 	}
 	
-	public void initiateGameWithOpponentsStartingMove(int blockNumber, int positionNumber) 
-	{
-		currentGameState = new Game();
-		currentGameState.setMove(opponentMark, blockNumber, positionNumber);
-	}
 	
-	public void initiateGame() 
+	public void initiateGame(PositionState playerMark) 
 	{
-		currentGameState = new Game();
+		setPlayersMark(playerMark);
+		currentGameState = new Game(thisPlayersMark);
 	}
 	
 	public void updateBoardWithPlayerMove(int blockNumber, int positionNumber) 

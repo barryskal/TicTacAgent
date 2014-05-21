@@ -10,14 +10,17 @@ import java.util.List;
 public class Block {
 	
 	private ArrayList<PositionState> positionStates;
+	private PositionState currentPlayer;
 	private final int NUM_POSITIONS = 9;
-	public static int MIN_POSITION_NUMBER = 1;
-	public static int MAX_POSITION_NUMBER = 9;
+	private final static int TOP_LEFT = 1;
+	private final static int TOP_RIGHT = 3;
+	
 	
 	/*
 	 * Creates a new block where each position is set to empty.
 	 */
-	public Block() {
+	public Block(PositionState inCurrentPlayer) {
+		currentPlayer = inCurrentPlayer;
 		positionStates = new ArrayList<PositionState>(NUM_POSITIONS + 1);
 		/* Note that the value at index = 0 is set to E; however it should never be used.
 		 * This makes it simpler to reference the positions by array incdex. 
@@ -28,6 +31,30 @@ public class Block {
 		{
 			positionStates.add(PositionState.E);
 		}
+	}
+	
+	/**
+	 * Creates a new Block as a copy of the given block
+	 * @param copiedBlock The Block to be copied
+	 */
+	public Block(Block copiedBlock)
+	{
+		positionStates = new ArrayList<PositionState>();
+		currentPlayer = copiedBlock.getCurrentPlayer();
+		for (int cell = 0; cell <= NUM_POSITIONS; cell++)
+		{
+			positionStates.add(copiedBlock.getPosition(cell));
+		}
+	}
+	
+	
+	/**
+	 * This method returns the representation of this automated player in the Game 
+	 * @return A PositionState representing this player.
+	 */
+	public PositionState getCurrentPlayer()
+	{
+		return currentPlayer;
 	}
 	
 	/**
@@ -71,6 +98,126 @@ public class Block {
 		return listOfEmptyCells;
 	}
 
+	
+	
+	/**
+	 * Performs the heuristic function on this block. 
+	 * @param currentPlayer	The representation of the current player, this determines whether 
+	 * the heuristic value is positive or negative 
+	 * @return 	The value obtained by performing the heuristic function. Note that any value 
+	 * greater than 100 indicates a terminal position.
+	 */
+	public int heuristicValue()
+	{
+		int heuristicValue = 0;
+		
+		// Analyse top row
+		heuristicValue += getSumForGivenLine(TOP_LEFT, 1);
+		
+		// Bottom Row
+		heuristicValue += getSumForGivenLine(TOP_LEFT + 6, 1);
+		
+		// Left Column
+		heuristicValue += getSumForGivenLine(TOP_LEFT, 3);
+		
+		// Right Column
+		heuristicValue += getSumForGivenLine(TOP_RIGHT, 3);
+		//System.out.println("Heuristic Value: " + String.valueOf(heuristicValue) + ", Sum right row: " + String.valueOf(getSumForGivenLine(TOP_RIGHT, 3, currentPlayer)));
+		
+		// Middle Column
+		heuristicValue += getSumForGivenLine(TOP_LEFT + 1, 3);
+		
+		// Middle Row
+		heuristicValue += getSumForGivenLine(TOP_LEFT + 3, 1);
+		
+		// Left Diagonal
+		heuristicValue += getSumForGivenLine(TOP_LEFT, 4);
+		
+		// Right Diagonal
+		heuristicValue += getSumForGivenLine(TOP_RIGHT, 2);
+		
+		return heuristicValue;
+	}
+	
+	/**
+	 * This method calculates the heuristic sum for the current block on the given line. 
+	 * This is based on the formula given in Question 1 in the week 10 exercises. 
+	 * @param startIndex 		The index from which the line starts (i.e. 1 = TOP LEFT)
+	 * @param incrementValue	The value being used to increment the index
+	 * @param currentPlayer 	The current player (this will determine whether which PositionState 
+	 * will generate a positive heuristic value.
+	 * @return					Will return the heuristic for the current line. If the block is already 
+	 * in a winning position, a value of 100 will be returned. 
+	 */
+	private int getSumForGivenLine(int startIndex, int incrementValue) 
+	{
+		int sum = 0; 
+		
+		for (int position = startIndex; position <= (startIndex + (incrementValue * 2)); position += incrementValue)
+		{
+			PositionState currentPosition = positionStates.get(position);
+			if (currentPosition == PositionState.E)
+				continue;
+			
+			if (currentPosition == currentPlayer)
+			{
+				if (sum < 0) // There is a mark of the opposite player on this line.
+					return 0;
+				if (sum == 0) // Line is empty so far
+					sum = 1;
+				else if (sum == 1) // There is already 1 of the current players marks on the line
+					sum = 3;
+				else if (sum == 3) // This is a win for the current player
+					return 100;
+			}
+			else // current position contains opposite player
+			{
+				if (sum > 0) // There is a mark of the opposite player on this line.
+					return 0;
+				if (sum == 0) // Line is empty so far
+					sum = -1;
+				else if (sum == -1) // There is already 1 of the opposing players marks on the line
+					sum = -3;
+				else if (sum == -3) // This is a win for the opposing player
+					return -100;
+			}
+			
+		}
+		
+		return sum;
+	}
+	
+	public void printBlock()
+	{
+		String [] rowStrings = getBlockAsString();
+		for (String rowString : rowStrings)
+			System.out.println("|" + rowString);
+	}
+	
+	
+	public String[] getBlockAsString()
+	{
+		String[] blockStrings = new String[3];
+		for (int row = 0; row < 3; row++)
+		{
+			blockStrings[row] = "";
+			for (int col = 1; col <= 3; col++)
+			{
+				int blockIndex = col + (row * 3);
+				
+				
+				
+				blockStrings[row] = blockStrings[row].concat(" " + positionStates.get(blockIndex).getValue() + " |");
+			}
+		}
+		return blockStrings;
+	}
+	
+	public PositionState getPosition(int position)
+	{
+		return positionStates.get(position);
+	}
+	
 	
 
 	
