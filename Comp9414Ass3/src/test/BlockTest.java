@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -92,10 +93,57 @@ public class BlockTest {
 		assertEquals("Heuristic value after 4th move", 2, testBlock.heuristicValue());
 		
 		testBlock.setPosition(9, currentPlayer);
-		testBlock.printBlock();
+		//testBlock.printBlock();
 		
 		assertEquals("winning move", 103, testBlock.heuristicValue());
 		
+	}
+	
+	@Test
+	public void testHeuristicOpponentWinInAVertical()
+	{
+		PositionState currentPlayer = PositionState.X;
+		Block testBlock = new Block(currentPlayer);
+		
+		PositionState opponent = PositionState.O;
+		
+		testBlock.setPosition(3, currentPlayer);
+		testBlock.setPosition(1, opponent);
+		testBlock.setPosition(8, currentPlayer);
+		testBlock.setPosition(7, opponent);
+		testBlock.setPosition(6, currentPlayer);
+		testBlock.setPosition(4, opponent);
+		//testBlock.printBlock();
+		
+		assertEquals("opponent wins", -97, testBlock.heuristicValue());
+	}
+
+	
+	@Test
+	public void testSortedListOfAvailableMovesl()
+	{
+		PositionState currentPlayer = PositionState.X;
+		Block testBlock = new Block(currentPlayer);
+		
+		PositionState opponent = PositionState.O;
+		
+		testBlock.setPosition(3, currentPlayer);
+		testBlock.setPosition(1, opponent);
+		testBlock.setPosition(8, currentPlayer);
+		testBlock.setPosition(7, opponent);
+		
+		//testBlock.printBlock();
+		
+		ArrayList<Integer> predictedList = new ArrayList<Integer>();
+		predictedList.add(4); // 2
+		predictedList.add(5); // 2
+		predictedList.add(6); // 1
+		predictedList.add(9); // 1
+		predictedList.add(2); // 0 
+		
+	
+		
+		assertEquals("Check ordering", predictedList, testBlock.getListOfBestMovesForThisCell(currentPlayer));
 	}
 			
 }

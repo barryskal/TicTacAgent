@@ -8,9 +8,11 @@ public class Game {
 
 	private ArrayList<Block> board;
 	private int nextMoveInBlockNumber;
+	private int lastMoveMadeInBlockNumber;
 	private final int NUM_BLOCKS = 9;
-	private PositionState whoHasNextMove;
+	public PositionState whoHasNextMove;
 	private PositionState playerMark;
+	
 	
 	
 	/**
@@ -46,6 +48,7 @@ public class Game {
 	{
 		board = new ArrayList<Block>();
 		playerMark = thisPlayerRepresentedBy;
+		whoHasNextMove = nextMoveToBeMadeBy;
 		
 		board.add(null);
 		
@@ -65,6 +68,7 @@ public class Game {
 	{
 		
 		board.get(blockNumber).setPosition(position, who);
+		lastMoveMadeInBlockNumber = blockNumber;
 		nextMoveInBlockNumber = position;
 		setWhoHasNextMove();
 	}
@@ -85,13 +89,27 @@ public class Game {
 	
 	public boolean isTerminalState() 
 	{
-		return Math.abs(heuristicFunctionValue()) >= 100;  
+		return Math.abs(heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber)) >= 90;  
 	}
 
 	
-	public int heuristicFunctionValue() 
+	public int heuristicFunctionValueOfGame()
 	{
-		Block nextBlock = getBlock(nextMoveInBlockNumber);
+		int heuristicValue = 0;
+		for (Block currentBlock : board)
+		{
+			/* The block at index, 0 is set to null, so just ignore that */
+			if (currentBlock == null)
+				continue;
+			heuristicValue += currentBlock.heuristicValue();
+		}
+		
+		return heuristicValue;
+	}
+	
+	public int heuristicFunctionValueOfCurrentBlock(int blockId) 
+	{
+		Block nextBlock = getBlock(blockId);
 		return nextBlock.heuristicValue();
 	}
 
@@ -100,11 +118,16 @@ public class Game {
 	{
 		return playerMark != whoHasNextMove;
 	}
+	
+	public int getLastBlockPlayedIn()
+	{
+		return lastMoveMadeInBlockNumber;
+	}
 
 	
 	public List<Game> getChildrenOfCurrentNode() 
 	{
-		List<Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfEmptyCells();
+		List<Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfBestMovesForThisCell(whoHasNextMove);
 		ArrayList<Game> childrenOfThisGame = new ArrayList<Game>(listOfEmptyCells.size());
 		
 		for (int currentCell : listOfEmptyCells)
@@ -118,19 +141,23 @@ public class Game {
 	}
 	
 	
-	public int alphaBetaSearchResult(Game currentState, int depth, int alpha, int beta) 
+	public int alphaBetaSearchResult(int depth, int alpha, int beta) 
 	{
-		if (currentState.isTerminalState() || depth == 0)
-			return currentState.heuristicFunctionValue();
+		if (isTerminalState())
+			return heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber);
+		else if (depth == 0)
+			return heuristicFunctionValueOfGame();
 	
 		
-		List<Game> childrenOfCurrentNode = currentState.getChildrenOfCurrentNode();
+		List<Game> childrenOfCurrentNode = getChildrenOfCurrentNode();
 		
 		if (!isOpponentPlaying())
 		{
 			for (Game childNode : childrenOfCurrentNode)
 			{
-				int alphaValue = alphaBetaSearchResult(childNode, depth - 1, alpha, beta);
+				int alphaValue = childNode.alphaBetaSearchResult(depth - 1, alpha, beta);
+				//System.out.println("My Alpha Beta Score: " + alphaValue);
+				//childNode.printGame();
 				if (alphaValue > alpha)
 					alpha = alphaValue;
 				
@@ -141,9 +168,15 @@ public class Game {
 		}
 		else 
 		{
+			//boolean debug = false; 
+			//if (nextMoveInBlockNumber == 5)
+				//debug = true;
 			for (Game childNode : childrenOfCurrentNode)
 			{
-				int betaValue = alphaBetaSearchResult(childNode, depth - 1, alpha, beta);
+				int betaValue = childNode.alphaBetaSearchResult(depth - 1, alpha, beta);
+				//if (debug && childNode.getLastBlockPlayedIn() == 5)
+					//System.out.println("Option: " + childNode.getNextBlockToPlayIn() + ", Opponent Alpha Beta Score: " + betaValue);
+				//childNode.printGame();
 				if (betaValue < beta)
 					beta = betaValue;
 				
@@ -156,7 +189,7 @@ public class Game {
 	
 	
 	/**
-	 * Prints the state of the currnet game to stdout. 
+	 * Prints the state of the current game to stdout. 
 	 */
 	public void printGame()
 	{
@@ -207,6 +240,14 @@ public class Game {
 	}
 
 	
+	/**
+	 * This method returns the next block to be played in. i.e. the value 1 - 9. 
+	 * @return An integer representing the next block to play in. 
+	 */
+	public int getNextBlockToPlayIn()
+	{
+		return nextMoveInBlockNumber;
+	}
 	
 	
 }

@@ -31,7 +31,6 @@ public class TCPConnection {
 			while (gameController.isGameActive()) {
 				String newLine = inFromServer.readLine();
 				gameController.translateMessageFromServer(newLine);
-				System.out.println("I'm here");
 			}
 			clientSocket.close();
 		} catch (IOException e) {

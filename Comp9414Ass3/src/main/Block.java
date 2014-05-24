@@ -2,6 +2,8 @@ package main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 /*
@@ -98,6 +100,50 @@ public class Block {
 		return listOfEmptyCells;
 	}
 
+	
+	public List<Integer> getListOfBestMovesForThisCell(PositionState whoHasNextMove)
+	{
+		List<Integer> emptyCells = getListOfEmptyCells();
+		ArrayList<Integer> sortedListOfMoves = new ArrayList<Integer>();
+		Hashtable<Integer, Integer> heuristicValuesForEmptyOptions = new Hashtable<Integer, Integer>();
+		
+		for (int emptyCell : emptyCells)
+		{
+			Block tempBlock = new Block(this);
+			tempBlock.setPosition(emptyCell, whoHasNextMove);
+			int heuristicValue = tempBlock.heuristicValue();
+			heuristicValuesForEmptyOptions.put(emptyCell, heuristicValue);
+			if (sortedListOfMoves.isEmpty())
+			{
+				sortedListOfMoves.add(emptyCell);
+			}
+			else
+			{
+				
+				int insertIndex = 0;
+				while (insertIndex < sortedListOfMoves.size())
+				{
+					int heuristicValueAIndex = heuristicValuesForEmptyOptions.get(sortedListOfMoves.get(insertIndex));
+					if (heuristicValue > heuristicValueAIndex)
+					{
+						sortedListOfMoves.add(insertIndex, emptyCell);
+						break;
+					}
+					insertIndex++;
+				}
+				
+				if (insertIndex == sortedListOfMoves.size())
+					sortedListOfMoves.add(emptyCell);
+				
+				
+			}
+			
+		}
+		
+		return sortedListOfMoves;
+	}
+	
+	
 	
 	
 	/**
