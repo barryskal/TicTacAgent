@@ -212,9 +212,9 @@ public class Block {
 				if (sum == 0) // Line is empty so far
 					sum = 1;
 				else if (sum == 1) // There is already 1 of the current players marks on the line
-					sum = 3;
-				else if (sum == 3) // This is a win for the current player
-					return 100;
+					sum = 20;
+				else if (sum == 20) // This is a win for the current player
+					return 200;
 			}
 			else // current position contains opposite player
 			{
@@ -223,9 +223,9 @@ public class Block {
 				if (sum == 0) // Line is empty so far
 					sum = -1;
 				else if (sum == -1) // There is already 1 of the opposing players marks on the line
-					sum = -3;
-				else if (sum == -3) // This is a win for the opposing player
-					return -100;
+					sum = -20;
+				else if (sum == -20) // This is a win for the opposing player
+					return -200;
 			}
 			
 		}

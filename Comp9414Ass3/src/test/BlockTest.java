@@ -46,7 +46,7 @@ public class BlockTest {
 		
 		testBlock.setPosition(4, currentPlayer);
 		
-		assertEquals("Heuristic value with third move middle-left", 4, testBlock.heuristicValue());
+		assertEquals("Heuristic value with third move middle-left", 21, testBlock.heuristicValue());
 		
 		testBlock.setPosition(5, opponent);
 		
@@ -58,16 +58,16 @@ public class BlockTest {
 		
 		testBlock.setPosition(3, opponent);
 		
-		assertEquals("Heuristic value after 6th move", -3, testBlock.heuristicValue());
+		assertEquals("Heuristic value after 6th move", -20, testBlock.heuristicValue());
 		
 		testBlock.setPosition(9, currentPlayer);
 		
-		assertEquals("Heuristic value after 7th move", -2, testBlock.heuristicValue());
+		assertEquals("Heuristic value after 7th move", -19, testBlock.heuristicValue());
 		
 		testBlock.setPosition(7, opponent);
-		//testBlock.printBlock();
 		
-		assertEquals("Heuristic value after 8th move", -103, testBlock.heuristicValue());
+		testBlock.printBlock();
+		assertEquals("Heuristic value after 8th move", -220, testBlock.heuristicValue());
 		
 	}
 	

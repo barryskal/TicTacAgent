@@ -89,7 +89,7 @@ public class Game {
 	
 	public boolean isTerminalState() 
 	{
-		return Math.abs(heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber)) >= 90;  
+		return Math.abs(heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber)) >= 100;  
 	}
 
 	
