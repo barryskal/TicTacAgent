@@ -21,7 +21,7 @@ public class Agent {
 		
 		try {
 			Controller gameController = new Controller(port);
-			gameController.setPlayer(new Player(gameController));
+			gameController.setPlayer(new Player());
 			TCPConnection server = new TCPConnection(port, gameController);
 			server.startServer();
 			

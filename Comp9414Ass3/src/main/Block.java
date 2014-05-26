@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class Block {
 	
-	private ArrayList<PositionState> positionStates;
-	private PositionState currentPlayer;
+	private String positionStates;
+	private Player thisPlayer;
 	private final int NUM_POSITIONS = 9;
 	private final static int TOP_LEFT = 1;
 	private final static int TOP_RIGHT = 3;
@@ -21,18 +21,21 @@ public class Block {
 	/*
 	 * Creates a new block where each position is set to empty.
 	 */
-	public Block(PositionState inCurrentPlayer) {
-		currentPlayer = inCurrentPlayer;
-		positionStates = new ArrayList<PositionState>(NUM_POSITIONS + 1);
+	public Block(Player inPlayer) {
+		thisPlayer = inPlayer;
+		positionStates = "----------";
 		/* Note that the value at index = 0 is set to E; however it should never be used.
 		 * This makes it simpler to reference the positions by array incdex. 
 		 */
+		
+		/*
 		positionStates.add(PositionState.E);
 		
 		for (int i = 1; i <= NUM_POSITIONS; i++) 
 		{
 			positionStates.add(PositionState.E);
 		}
+		*/
 	}
 	
 	/**
@@ -41,12 +44,17 @@ public class Block {
 	 */
 	public Block(Block copiedBlock)
 	{
+		thisPlayer = copiedBlock.getCurrentPlayer();
+		positionStates = copiedBlock.getPositionStates();
+		
+		/*
 		positionStates = new ArrayList<PositionState>();
-		currentPlayer = copiedBlock.getCurrentPlayer();
+		thisPlayer = copiedBlock.getCurrentPlayer();
 		for (int cell = 0; cell <= NUM_POSITIONS; cell++)
 		{
 			positionStates.add(copiedBlock.getPosition(cell));
 		}
+		*/
 	}
 	
 	
@@ -54,9 +62,9 @@ public class Block {
 	 * This method returns the representation of this automated player in the Game 
 	 * @return A PositionState representing this player.
 	 */
-	public PositionState getCurrentPlayer()
+	public Player getCurrentPlayer()
 	{
-		return currentPlayer;
+		return thisPlayer;
 	}
 	
 	/**
@@ -66,7 +74,8 @@ public class Block {
 	 */
 	public void setPosition(int position, PositionState positionState)
 	{
-		positionStates.set(position, positionState);
+		positionStates = positionStates.substring(0, position) + positionState.getValue() + positionStates.substring(position + 1);
+		//positionStates.set(position, positionState);
 	}
 	
 	/**
@@ -76,7 +85,8 @@ public class Block {
 	 */
 	public boolean isValidMove(int position)
 	{
-		return positionStates.get(position) == PositionState.E;
+		return positionStates.charAt(position) == '-';
+		//return positionStates.get(position) == PositionState.E;
 	}
 	
 	/**
@@ -87,9 +97,9 @@ public class Block {
 	{
 		ArrayList<Integer> listOfEmptyCells = new ArrayList<Integer>();
 		int i = 0;
-		for (PositionState currentPosition : positionStates)
+		for (char currentPosition : positionStates.toCharArray())
 		{
-			if (currentPosition == PositionState.E)
+			if (currentPosition == '-')
 				listOfEmptyCells.add(i);
 			i++;
 		}
@@ -111,7 +121,7 @@ public class Block {
 		{
 			Block tempBlock = new Block(this);
 			tempBlock.setPosition(emptyCell, whoHasNextMove);
-			int heuristicValue = tempBlock.heuristicValue();
+			int heuristicValue = tempBlock.calculateHeuristicValue();
 			heuristicValuesForEmptyOptions.put(emptyCell, heuristicValue);
 			if (sortedListOfMoves.isEmpty())
 			{
@@ -153,9 +163,15 @@ public class Block {
 	 * @return 	The value obtained by performing the heuristic function. Note that any value 
 	 * greater than 100 indicates a terminal position.
 	 */
-	public int heuristicValue()
+	public int calculateHeuristicValue()
 	{
-		int heuristicValue = 0;
+		// Look up if we've calculated a heuristic for this block already
+		int heuristicValue = thisPlayer.getHeuristcValueIfExists(this);
+		
+		if (heuristicValue != -1)
+			return heuristicValue;
+		
+		heuristicValue = 0;
 		
 		// Analyse top row
 		heuristicValue += getSumForGivenLine(TOP_LEFT, 1);
@@ -182,6 +198,11 @@ public class Block {
 		// Right Diagonal
 		heuristicValue += getSumForGivenLine(TOP_RIGHT, 2);
 		
+		/* Update the hash table of heuristic values so that we don't have to 
+		 * perform this calculation again.
+		 */
+		thisPlayer.updateHeuristicValue(this, heuristicValue);
+		
 		return heuristicValue;
 	}
 	
@@ -201,11 +222,11 @@ public class Block {
 		
 		for (int position = startIndex; position <= (startIndex + (incrementValue * 2)); position += incrementValue)
 		{
-			PositionState currentPosition = positionStates.get(position);
-			if (currentPosition == PositionState.E)
+			char currentPosition = getPosition(position);
+			if (currentPosition == '-')
 				continue;
 			
-			if (currentPosition == currentPlayer)
+			if (currentPosition == thisPlayer.getPlayersMark().getValue())
 			{
 				if (sum < 0) // There is a mark of the opposite player on this line.
 					return 0;
@@ -251,21 +272,48 @@ public class Block {
 			{
 				int blockIndex = col + (row * 3);
 				
-				
-				
-				blockStrings[row] = blockStrings[row].concat(" " + positionStates.get(blockIndex).getValue() + " |");
+				blockStrings[row] = blockStrings[row].concat(" " + getPosition(blockIndex) + " |");
+				//blockStrings[row] = blockStrings[row].concat(" " + positionStates.get(blockIndex).getValue() + " |");
 			}
 		}
 		return blockStrings;
 	}
 	
-	public PositionState getPosition(int position)
+	public char getPosition(int position)
 	{
-		return positionStates.get(position);
+		return positionStates.charAt(position);
 	}
 	
-	
+	public String getPositionStates()
+	{
+		return positionStates;
+	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((positionStates == null) ? 0 : positionStates.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Block other = (Block) obj;
+		if (positionStates == null) {
+			if (other.positionStates != null)
+				return false;
+		} else if (!positionStates.equals(other.positionStates))
+			return false;
+		return true;
+	}
 	
 }
 

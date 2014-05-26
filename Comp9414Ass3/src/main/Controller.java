@@ -87,7 +87,8 @@ public class Controller {
 	}
 	
 	private PositionState parseStartCommand(String inMessage) {
-		String representingCharacter = String.valueOf(inMessage.charAt(6));
+		//String representingCharacter = String.valueOf(inMessage.charAt(6));
+		char representingCharacter = inMessage.charAt(6);
 		PositionState playerState = PositionState.getPositionFromGivenValue(representingCharacter);
 		return playerState;
 	}

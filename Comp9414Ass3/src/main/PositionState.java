@@ -3,25 +3,25 @@ package main;
 
 public enum PositionState {
 
-	X("X"),
-	O("O"),
-	E("-");
+	X('x'),
+	O('o'),
+	E('-');
 
-	private String mValue;
+	private char mValue;
 	
-	private PositionState(String inValue) {
+	private PositionState(char inValue) {
 		mValue = inValue;
 	}
 	
-	public String getValue()
+	public char getValue()
 	{
 		return(mValue);
 	}
 	
-	public static PositionState getPositionFromGivenValue(String inValue)
+	public static PositionState getPositionFromGivenValue(char inValue)
 	{
 		for (PositionState pos : PositionState.values())
-			if (pos.getValue().equalsIgnoreCase(inValue))
+			if (pos.getValue() == inValue)
 				return(pos);
 
 		throw new IllegalArgumentException("Invalid position type given " + inValue);

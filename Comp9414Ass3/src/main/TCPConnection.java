@@ -15,27 +15,31 @@ public class TCPConnection {
 	public TCPConnection(int inPort, Controller inController) throws Exception {
 		serverPort = inPort;
 		gameController = inController;
-		try {
-			clientSocket = new Socket("localhost", inPort);
-			gameController.setTCPConnection(this);
-		} catch (IOException e) {
-			throw new Exception("Unable to connect to server at port " + inPort);
-		}
+		gameController.setTCPConnection(this);
 	}
 
 	public void startServer() throws IOException {
 
-		try {
+		try 
+		{
+			clientSocket = new Socket("localhost", serverPort);
 			BufferedReader inFromServer = new BufferedReader(
 					new InputStreamReader(clientSocket.getInputStream()));
 			while (gameController.isGameActive()) {
 				String newLine = inFromServer.readLine();
 				gameController.translateMessageFromServer(newLine);
 			}
-			clientSocket.close();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			throw new IOException("Issue with TCP connection, exiting");
 		} 
+		finally
+		{
+			if (clientSocket != null)
+				clientSocket.close();
+			
+		}
 
 	}
 	

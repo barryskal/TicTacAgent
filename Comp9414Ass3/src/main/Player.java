@@ -1,6 +1,7 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 
@@ -21,13 +22,14 @@ public class Player {
 	private Controller gameController;
 	private int myMoveCounter;
 	public AlphaBetaSearchTree currentAlphaBetaSearchTree;
+	private Hashtable<String, Integer> heuristicResults;
 	
-	public Player(Controller inController) 
+	public Player()
 	{
-		gameController = inController;
+		heuristicResults = new Hashtable<String, Integer>();
 	}
 	
-	private void setPlayersMark (PositionState inPositionState) {
+	public void setPlayersMark (PositionState inPositionState) {
 		thisPlayersMark = inPositionState;
 		
 		// Set the opponents mark as the opposite of this player.
@@ -47,7 +49,7 @@ public class Player {
 	{
 		setPlayersMark(playerMark);
 		myMoveCounter = 0;
-		currentGameState = new Game(thisPlayersMark);
+		currentGameState = new Game(this);
 		currentAlphaBetaSearchTree = null;
 	}
 	
@@ -106,26 +108,26 @@ public class Player {
 			//currentAlphaBetaSearchTree = new AlphaBetaSearchTree(currentGameState, 0);
 			position = getNextMoveUsingAlphaBeta(1);
 		}
-		else if (myMoveCounter <= 100)
+		else if (myMoveCounter <= 5)
 		{
 			//currentAlphaBetaSearchTree = new AlphaBetaSearchTree(currentGameState, 0);
 			//currentAlphaBetaSearchTree = currentAlphaBetaSearchTree.selectTreeCorrespondingToOpponentMove(lastPositionPlayed);
 			position = getNextMoveUsingAlphaBeta(7);
 		}
-		else if (myMoveCounter <= 10)
+		else if (myMoveCounter <= 11)
 		{
 			//currentAlphaBetaSearchTree = currentAlphaBetaSearchTree.selectTreeCorrespondingToOpponentMove(lastPositionPlayed);
-			position = getNextMoveUsingAlphaBeta(4);
+			position = getNextMoveUsingAlphaBeta(9);
 		}
-		else if (myMoveCounter <= 8)
+		else if (myMoveCounter <= 15)
 		{
 			//currentAlphaBetaSearchTree = currentAlphaBetaSearchTree.selectTreeCorrespondingToOpponentMove(lastPositionPlayed);
-			position = getNextMoveUsingAlphaBeta(6);
+			position = getNextMoveUsingAlphaBeta(11);
 		}
 		else
 		{
 			//currentAlphaBetaSearchTree = currentAlphaBetaSearchTree.selectTreeCorrespondingToOpponentMove(lastPositionPlayed);
-			position = getNextMoveUsingAlphaBeta(9);
+			position = getNextMoveUsingAlphaBeta(13);
 		}
 		
 		updateBoardWithPlayerMove(lastPositionPlayed, position);
@@ -165,15 +167,19 @@ public class Player {
 			int bestMoveToMake = 0;
 			int result = alpha; 
 			
-			
-			for (Game childNode : currentGameState.getChildrenOfCurrentNode())				
+			List<Integer> listOfEmptyCells = currentGameState.getBlock(currentGameState.getNextBlockToPlayIn()).getListOfBestMovesForThisCell(thisPlayersMark);
+			//for (Game childNode : currentGameState.getChildrenOfCurrentNode())
+			for (int emptyCell : listOfEmptyCells)
 			{
-				result = childNode.alphaBetaSearchResult(depth, alpha, beta);
+				Game expandedState = new Game(currentGameState, thisPlayersMark);
+				expandedState.setMove(thisPlayersMark, currentGameState.getNextBlockToPlayIn(), emptyCell);
+				
+				result = expandedState.alphaBetaSearchResult(depth, alpha, beta);
 				//childNode.printGame();
-				System.out.println("Option: " + childNode.getNextBlockToPlayIn() + ", result: " + result);
+				System.out.println("Option: " + expandedState.getNextBlockToPlayIn() + ", result: " + result);
 				if (result > alpha)
 				{
-					bestMoveToMake = childNode.getNextBlockToPlayIn();
+					bestMoveToMake = expandedState.getNextBlockToPlayIn();
 					alpha = result;
 				}					
 				
@@ -205,7 +211,19 @@ public class Player {
 	}
 	
 	
+	public int getHeuristcValueIfExists(Block block)
+	{
+		Integer heuristicValue = heuristicResults.get(block.getPositionStates());
+		if (heuristicValue == null)
+			return -1;
+		
+		return heuristicValue;
+	}
 	
+	public void updateHeuristicValue(Block block, int heuristicValue)
+	{
+		heuristicResults.put(block.getPositionStates(), heuristicValue);
+	}
 	
 
 }

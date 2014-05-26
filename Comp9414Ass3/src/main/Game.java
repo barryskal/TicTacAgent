@@ -11,7 +11,7 @@ public class Game {
 	private int lastMoveMadeInBlockNumber;
 	private final int NUM_BLOCKS = 9;
 	public PositionState whoHasNextMove;
-	private PositionState playerMark;
+	private Player thisPlayer;
 	
 	
 	
@@ -20,9 +20,9 @@ public class Game {
 	 * all initially empty.
 	 * @param thisPlayerRepresentedBy	The representation of the player that is being controlled by this program
 	 */
-	public Game(PositionState thisPlayerRepresentedBy) {
+	public Game(Player inPlayer) {
 		board = new ArrayList<Block>();
-		playerMark = thisPlayerRepresentedBy;
+		thisPlayer = inPlayer;
 		// Note that as per the spec, the first move always is the player with X.
 		whoHasNextMove = PositionState.X;
 		
@@ -34,7 +34,7 @@ public class Game {
 		board.add(null);
 		
 		for (int i = 0; i < NUM_BLOCKS; i++)
-			board.add(new Block(playerMark));
+			board.add(new Block(thisPlayer));
 		
 	}
 	
@@ -44,10 +44,10 @@ public class Game {
 	 * @param nextMoveToBeMadeBy		The representation of the player that is making the next move. 
 	 * @param thisPlayerRepresentedBy	The representation of the player that is being controlled by this program
 	 */
-	public Game(Game copiedGame, PositionState nextMoveToBeMadeBy, PositionState thisPlayerRepresentedBy)
+	public Game(Game copiedGame, PositionState nextMoveToBeMadeBy)
 	{
 		board = new ArrayList<Block>();
-		playerMark = thisPlayerRepresentedBy;
+		thisPlayer = copiedGame.getPlayerRepresentedByThisProgram();
 		whoHasNextMove = nextMoveToBeMadeBy;
 		
 		board.add(null);
@@ -101,7 +101,7 @@ public class Game {
 			/* The block at index, 0 is set to null, so just ignore that */
 			if (currentBlock == null)
 				continue;
-			heuristicValue += currentBlock.heuristicValue();
+			heuristicValue += currentBlock.calculateHeuristicValue();
 		}
 		
 		return heuristicValue;
@@ -110,13 +110,13 @@ public class Game {
 	public int heuristicFunctionValueOfCurrentBlock(int blockId) 
 	{
 		Block nextBlock = getBlock(blockId);
-		return nextBlock.heuristicValue();
+		return nextBlock.calculateHeuristicValue();
 	}
 
 	
 	public boolean isOpponentPlaying() 
 	{
-		return playerMark != whoHasNextMove;
+		return thisPlayer.getPlayersMark() != whoHasNextMove;
 	}
 	
 	public int getLastBlockPlayedIn()
@@ -125,7 +125,7 @@ public class Game {
 	}
 
 	
-	public List<Game> getChildrenOfCurrentNode() 
+/*	public List<Game> getChildrenOfCurrentNode() 
 	{
 		List<Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfBestMovesForThisCell(whoHasNextMove);
 		ArrayList<Game> childrenOfThisGame = new ArrayList<Game>(listOfEmptyCells.size());
@@ -138,7 +138,7 @@ public class Game {
 		}
 		
 		return childrenOfThisGame;
-	}
+	}*/
 	
 	
 	public int alphaBetaSearchResult(int depth, int alpha, int beta) 
@@ -148,14 +148,19 @@ public class Game {
 		else if (depth == 0)
 			return heuristicFunctionValueOfGame();
 	
-		
-		List<Game> childrenOfCurrentNode = getChildrenOfCurrentNode();
+		List <Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfBestMovesForThisCell(whoHasNextMove);
+		//List<Game> childrenOfCurrentNode = getChildrenOfCurrentNode();
 		
 		if (!isOpponentPlaying())
 		{
-			for (Game childNode : childrenOfCurrentNode)
+			//for (Game childNode : childrenOfCurrentNode)
+			for (int emptyCell : listOfEmptyCells)
 			{
-				int alphaValue = childNode.alphaBetaSearchResult(depth - 1, alpha, beta);
+				// Expand this game state
+				Game expandedState = new Game(this, whoHasNextMove);
+				expandedState.setMove(whoHasNextMove, nextMoveInBlockNumber, emptyCell);
+				
+				int alphaValue = expandedState.alphaBetaSearchResult(depth - 1, alpha, beta);
 				//System.out.println("My Alpha Beta Score: " + alphaValue);
 				//childNode.printGame();
 				if (alphaValue > alpha)
@@ -171,9 +176,12 @@ public class Game {
 			//boolean debug = false; 
 			//if (nextMoveInBlockNumber == 5)
 				//debug = true;
-			for (Game childNode : childrenOfCurrentNode)
+			//for (Game childNode : childrenOfCurrentNode)
+			for (int emptyCell : listOfEmptyCells)
 			{
-				int betaValue = childNode.alphaBetaSearchResult(depth - 1, alpha, beta);
+				Game expandedState = new Game(this, whoHasNextMove);
+				expandedState.setMove(whoHasNextMove, nextMoveInBlockNumber, emptyCell);
+				int betaValue = expandedState.alphaBetaSearchResult(depth - 1, alpha, beta);
 				//if (debug && childNode.getLastBlockPlayedIn() == 5)
 					//System.out.println("Option: " + childNode.getNextBlockToPlayIn() + ", Opponent Alpha Beta Score: " + betaValue);
 				//childNode.printGame();
@@ -249,5 +257,8 @@ public class Game {
 		return nextMoveInBlockNumber;
 	}
 	
-	
+	public Player getPlayerRepresentedByThisProgram()
+	{
+		return thisPlayer;
+	}
 }
