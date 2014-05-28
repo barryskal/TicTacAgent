@@ -1,8 +1,6 @@
 package main;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -13,7 +11,6 @@ public class Block {
 	
 	private String positionStates;
 	private Player thisPlayer;
-	private final int NUM_POSITIONS = 9;
 	private final static int TOP_LEFT = 1;
 	private final static int TOP_RIGHT = 3;
 	
@@ -23,19 +20,12 @@ public class Block {
 	 */
 	public Block(Player inPlayer) {
 		thisPlayer = inPlayer;
-		positionStates = "----------";
+		
 		/* Note that the value at index = 0 is set to E; however it should never be used.
-		 * This makes it simpler to reference the positions by array incdex. 
+		 * This makes it simpler to reference the positions by array index. 
 		 */
-		
-		/*
-		positionStates.add(PositionState.E);
-		
-		for (int i = 1; i <= NUM_POSITIONS; i++) 
-		{
-			positionStates.add(PositionState.E);
-		}
-		*/
+		positionStates = "----------";
+
 	}
 	
 	/**
@@ -47,14 +37,6 @@ public class Block {
 		thisPlayer = copiedBlock.getCurrentPlayer();
 		positionStates = copiedBlock.getPositionStates();
 		
-		/*
-		positionStates = new ArrayList<PositionState>();
-		thisPlayer = copiedBlock.getCurrentPlayer();
-		for (int cell = 0; cell <= NUM_POSITIONS; cell++)
-		{
-			positionStates.add(copiedBlock.getPosition(cell));
-		}
-		*/
 	}
 	
 	
@@ -75,7 +57,7 @@ public class Block {
 	public void setPosition(int position, PositionState positionState)
 	{
 		positionStates = positionStates.substring(0, position) + positionState.getValue() + positionStates.substring(position + 1);
-		//positionStates.set(position, positionState);
+
 	}
 	
 	/**
@@ -86,7 +68,6 @@ public class Block {
 	public boolean isValidMove(int position)
 	{
 		return positionStates.charAt(position) == '-';
-		//return positionStates.get(position) == PositionState.E;
 	}
 	
 	/**
@@ -110,7 +91,15 @@ public class Block {
 		return listOfEmptyCells;
 	}
 
-	
+	/**
+	 * Performs a similar function to getListOfEmptyCells. Howver, instead of just returning 
+	 * a list of empty cells. This method sorts those cells in order of which move would 
+	 * generate the best heuristic value for the current block. That is, the move that
+	 * would generate the best heuristic value (for the player who has the next move) will 
+	 * be at the head of the list. 
+	 * @param whoHasNextMove	A PositionState representing who has the next move in this block
+	 * @return	Returns a list of cell positions (i.e. values 1-9) that are currently empty.
+	 */
 	public List<Integer> getListOfBestMovesForThisCell(PositionState whoHasNextMove)
 	{
 		List<Integer> emptyCells = getListOfEmptyCells();
@@ -158,8 +147,6 @@ public class Block {
 	
 	/**
 	 * Performs the heuristic function on this block. 
-	 * @param currentPlayer	The representation of the current player, this determines whether 
-	 * the heuristic value is positive or negative 
 	 * @return 	The value obtained by performing the heuristic function. Note that any value 
 	 * greater than 100 indicates a terminal position.
 	 */
@@ -168,7 +155,7 @@ public class Block {
 		// Look up if we've calculated a heuristic for this block already
 		int heuristicValue = thisPlayer.getHeuristcValueIfExists(this);
 		
-		if (heuristicValue != -1)
+		if (heuristicValue != -1000)
 			return heuristicValue;
 		
 		heuristicValue = 0;
@@ -184,7 +171,6 @@ public class Block {
 		
 		// Right Column
 		heuristicValue += getSumForGivenLine(TOP_RIGHT, 3);
-		//System.out.println("Heuristic Value: " + String.valueOf(heuristicValue) + ", Sum right row: " + String.valueOf(getSumForGivenLine(TOP_RIGHT, 3, currentPlayer)));
 		
 		// Middle Column
 		heuristicValue += getSumForGivenLine(TOP_LEFT + 1, 3);
@@ -205,16 +191,16 @@ public class Block {
 		
 		return heuristicValue;
 	}
+
+	
 	
 	/**
 	 * This method calculates the heuristic sum for the current block on the given line. 
 	 * This is based on the formula given in Question 1 in the week 10 exercises. 
 	 * @param startIndex 		The index from which the line starts (i.e. 1 = TOP LEFT)
 	 * @param incrementValue	The value being used to increment the index
-	 * @param currentPlayer 	The current player (this will determine whether which PositionState 
-	 * will generate a positive heuristic value.
 	 * @return					Will return the heuristic for the current line. If the block is already 
-	 * in a winning position, a value of 100 will be returned. 
+	 * in a winning position, a value of 200/-200 will be returned. 
 	 */
 	private int getSumForGivenLine(int startIndex, int incrementValue) 
 	{
@@ -254,6 +240,9 @@ public class Block {
 		return sum;
 	}
 	
+	/**
+	 * Prints a representation of the current block to stdout
+	 */
 	public void printBlock()
 	{
 		String [] rowStrings = getBlockAsString();
@@ -261,7 +250,10 @@ public class Block {
 			System.out.println("|" + rowString);
 	}
 	
-	
+	/**
+	 * Returns a representation of the current block as an array of strings
+	 * @return	An array of strings representing the state of the current block.
+	 */
 	public String[] getBlockAsString()
 	{
 		String[] blockStrings = new String[3];
@@ -273,17 +265,26 @@ public class Block {
 				int blockIndex = col + (row * 3);
 				
 				blockStrings[row] = blockStrings[row].concat(" " + getPosition(blockIndex) + " |");
-				//blockStrings[row] = blockStrings[row].concat(" " + positionStates.get(blockIndex).getValue() + " |");
 			}
 		}
 		return blockStrings;
 	}
 	
+	/**
+	 * Returns a char representing the state of the given position
+	 * @param position	An int representing the position for which we are 
+	 * interested in
+	 * @return			A char representing the current state of the position. 
+	 */
 	public char getPosition(int position)
 	{
 		return positionStates.charAt(position);
 	}
 	
+	/**
+	 * Returns the string representing the state of each cell in the block.
+	 * @return A string representing the state of each cell in the block.
+	 */
 	public String getPositionStates()
 	{
 		return positionStates;

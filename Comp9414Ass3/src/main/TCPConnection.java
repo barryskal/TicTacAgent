@@ -12,12 +12,18 @@ public class TCPConnection {
 	private Controller gameController;
 	private int serverPort;
 
-	public TCPConnection(int inPort, Controller inController) throws Exception {
+	
+	public TCPConnection(int inPort, Controller inController)  {
 		serverPort = inPort;
 		gameController = inController;
 		gameController.setTCPConnection(this);
 	}
 
+	/**
+	 * Starts the TCP server, which connects to the port provided when the TCPConnection
+	 * object was created. 
+	 * @throws IOException Exception thrown if there is an IO issue with the server. 
+	 */
 	public void startServer() throws IOException {
 
 		try 
@@ -48,7 +54,7 @@ public class TCPConnection {
 	 * @param outMove		The message to be sent to the server, e.g. "4"
 	 * @throws IOException	Exception thrown if there is an issue with sending data to the server. 
 	 */
-	public void sendMoveToServer(String outMove) throws IOException 
+	public void sendMoveToServer(String outMove)  
 	{
 		if (Agent.debugMode)
 			System.out.println("Message sent to server: " + outMove);
@@ -60,8 +66,7 @@ public class TCPConnection {
 		} 
 		catch (IOException e)
 		{
-			e.printStackTrace();
-			throw new IOException("Unable to send messgae:" +  outMove + ", to server");
+			System.out.println("Unable to send messgae:" +  outMove + ", to server");
 		}
 	}
 

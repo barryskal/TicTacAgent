@@ -42,7 +42,6 @@ public class Game {
 	 * Creates a new game that is a copy of the given game
 	 * @param copiedGame				The game to be copied
 	 * @param nextMoveToBeMadeBy		The representation of the player that is making the next move. 
-	 * @param thisPlayerRepresentedBy	The representation of the player that is being controlled by this program
 	 */
 	public Game(Game copiedGame, PositionState nextMoveToBeMadeBy)
 	{
@@ -70,10 +69,10 @@ public class Game {
 		board.get(blockNumber).setPosition(position, who);
 		lastMoveMadeInBlockNumber = blockNumber;
 		nextMoveInBlockNumber = position;
-		setWhoHasNextMove();
+		updateWhoHasNextMove();
 	}
 	
-	private void setWhoHasNextMove()
+	private void updateWhoHasNextMove()
 	{
 		if (whoHasNextMove == PositionState.X)
 			whoHasNextMove = PositionState.O;
@@ -86,13 +85,20 @@ public class Game {
 		return board.get(blockNumber);
 	}
 
-	
+	/**
+	 * Determines whether the current state of the board is terminal, 
+	 * i.e. either 'X' or 'O' has one
+	 * @return	A boolean value representing whether the game has ended.
+	 */
 	public boolean isTerminalState() 
 	{
-		return Math.abs(heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber)) >= 100;  
+		return Math.abs(heuristicFunctionValueOfGivenBlock(lastMoveMadeInBlockNumber)) >= 100;  
 	}
 
-	
+	/**
+	 * Calculates the heuristic function value for the current state of the baord.
+	 * @return An int representing the heuristic function value calculated for this board.
+	 */
 	public int heuristicFunctionValueOfGame()
 	{
 		int heuristicValue = 0;
@@ -107,7 +113,14 @@ public class Game {
 		return heuristicValue;
 	}
 	
-	public int heuristicFunctionValueOfCurrentBlock(int blockId) 
+	/**
+	 * Returns the heuristic function value for a given block. 
+	 * @param blockId	An int representing the block for which you want 
+	 * the heuristic function value. 
+	 * @return			An int representing the heuristic function value 
+	 * for the given block
+	 */
+	public int heuristicFunctionValueOfGivenBlock(int blockId) 
 	{
 		Block nextBlock = getBlock(blockId);
 		return nextBlock.calculateHeuristicValue();
@@ -125,35 +138,27 @@ public class Game {
 	}
 
 	
-/*	public List<Game> getChildrenOfCurrentNode() 
-	{
-		List<Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfBestMovesForThisCell(whoHasNextMove);
-		ArrayList<Game> childrenOfThisGame = new ArrayList<Game>(listOfEmptyCells.size());
-		
-		for (int currentCell : listOfEmptyCells)
-		{
-			Game copiedGame = new Game(this, whoHasNextMove, playerMark);
-			copiedGame.setMove(whoHasNextMove, nextMoveInBlockNumber, currentCell);
-			childrenOfThisGame.add(copiedGame);
-		}
-		
-		return childrenOfThisGame;
-	}*/
-	
-	
+	/**
+	 * Returns the best score obtained by performing a alpha beta search for a given depth.
+	 * The algorithm for this function is based on the COMP9414 week 4 lecture notes, 
+	 * slide 26.  
+	 * @param depth		An int representing the depth for the search
+	 * @param alpha		An int representing the alpha value used as input for the search
+	 * @param beta		An int representing the beta value used as input for the search
+	 * @return			An int representing the best possible heuristic value found using the 
+	 * given search
+	 */
 	public int alphaBetaSearchResult(int depth, int alpha, int beta) 
 	{
 		if (isTerminalState())
-			return heuristicFunctionValueOfCurrentBlock(lastMoveMadeInBlockNumber);
+			return heuristicFunctionValueOfGivenBlock(lastMoveMadeInBlockNumber);
 		else if (depth == 0)
 			return heuristicFunctionValueOfGame();
 	
 		List <Integer> listOfEmptyCells = getBlock(nextMoveInBlockNumber).getListOfBestMovesForThisCell(whoHasNextMove);
-		//List<Game> childrenOfCurrentNode = getChildrenOfCurrentNode();
 		
 		if (!isOpponentPlaying())
 		{
-			//for (Game childNode : childrenOfCurrentNode)
 			for (int emptyCell : listOfEmptyCells)
 			{
 				// Expand this game state
@@ -161,8 +166,7 @@ public class Game {
 				expandedState.setMove(whoHasNextMove, nextMoveInBlockNumber, emptyCell);
 				
 				int alphaValue = expandedState.alphaBetaSearchResult(depth - 1, alpha, beta);
-				//System.out.println("My Alpha Beta Score: " + alphaValue);
-				//childNode.printGame();
+
 				if (alphaValue > alpha)
 					alpha = alphaValue;
 				
@@ -173,18 +177,13 @@ public class Game {
 		}
 		else 
 		{
-			//boolean debug = false; 
-			//if (nextMoveInBlockNumber == 5)
-				//debug = true;
-			//for (Game childNode : childrenOfCurrentNode)
+
 			for (int emptyCell : listOfEmptyCells)
 			{
 				Game expandedState = new Game(this, whoHasNextMove);
 				expandedState.setMove(whoHasNextMove, nextMoveInBlockNumber, emptyCell);
 				int betaValue = expandedState.alphaBetaSearchResult(depth - 1, alpha, beta);
-				//if (debug && childNode.getLastBlockPlayedIn() == 5)
-					//System.out.println("Option: " + childNode.getNextBlockToPlayIn() + ", Opponent Alpha Beta Score: " + betaValue);
-				//childNode.printGame();
+
 				if (betaValue < beta)
 					beta = betaValue;
 				

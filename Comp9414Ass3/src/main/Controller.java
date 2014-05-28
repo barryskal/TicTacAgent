@@ -1,37 +1,44 @@
 package main;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 
 /**
- * The Controller class determines which action to take based on the messgaes received from the game server
+ * The Controller class determines which action to take based on the messages received from the game server
  * @author Barry Skalrud
  *
  */
 public class Controller {
 
 	private Player currentPlayer;
-	private int serverPort; 
 	private boolean activeGame = true;
 	private TCPConnection tcpConnection;
 	
+	/**
+	 * Cretaes a new Controller object
+	 */
+	public Controller() {}
 	
+	/**
+	 * Sets the TCPConnection object to be used by the controller for sending messages 
+	 * to the game server
+	 * @param inConnection 	A TCPConnection object that the controller is to use 
+	 */
 	public void setTCPConnection(TCPConnection inConnection)
 	{
 		tcpConnection = inConnection;
 	}
 	
-	public Controller(int inServerPort) {
-		serverPort = inServerPort;
-	}
 	
 	public void setPlayer(Player inPlayer)
 	{
 		currentPlayer = inPlayer;
 	}
 	
+	/**
+	 * Returns whether the game is currently in progress or it has already been won / lost. 
+	 * @return	A boolean value identifying whether this game is still in progress. 
+	 */
 	public boolean isGameActive()
 	{
 		return activeGame;
@@ -86,8 +93,12 @@ public class Controller {
 		currentPlayer.initiateGame(parseStartCommand(startMessage));
 	}
 	
+	/**
+	 * Parses the start command to determine the representation of this player. 
+	 * @param inMessage		The String received from the server containing the start command
+	 * @return				A positionState value identifying the representation of this player
+	 */
 	private PositionState parseStartCommand(String inMessage) {
-		//String representingCharacter = String.valueOf(inMessage.charAt(6));
 		char representingCharacter = inMessage.charAt(6);
 		PositionState playerState = PositionState.getPositionFromGivenValue(representingCharacter);
 		return playerState;
@@ -149,14 +160,17 @@ public class Controller {
 
 	/**
 	 * Requests the next move from the player and sends that to the game server
-	 * @throws IOException Thrown if there is an issue connecting to the game server.
 	 */
-	private void decideOnNextMoveAndSendToServer() throws IOException {
+	private void decideOnNextMoveAndSendToServer() {
 		int nextPosition = currentPlayer.decideNextMove();
 		
 		tcpConnection.sendMoveToServer(String.valueOf(nextPosition));
 	}
 	
+	
+	/**
+	 * Sets a flag which identifies that this game has ended. 
+	 */
 	private void endGameKillServer() 
 	{
 		activeGame = false;
